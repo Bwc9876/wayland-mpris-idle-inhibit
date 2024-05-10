@@ -7,7 +7,7 @@ to inhibit the idle behavior of the compositor when a media player is playing.
 
 - `--poll-interval <interval>`: The interval in seconds at which the program will poll the Wayland server for
   changes in the idle state of the compositor. The default value is `10`.
-- `--ignore <name>`: A comma-separated list of media player names to ignore. This name is the part of the
+- `--ignore <name>`: A player name to ignore. This name is the part of the
   `org.mpris.MediaPlayer2` interface name after the `org.mpris.MediaPlayer2.` prefix. For example, for
   `org.mpris.MediaPlayer2.vlc`, the name is `vlc`. This option can be specified multiple times.
 - `--verbose`: Verbosity of output, can be 0 = silent, 1 = info, 2 = debug (defaults to 1)
