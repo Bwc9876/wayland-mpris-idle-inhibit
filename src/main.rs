@@ -116,10 +116,14 @@ fn main() -> Result {
                 debug!("MPRIS status: {playing}");
                 if playing != current_status {
                     info!("MPRIS status changed: {playing}");
-                    wayland_client
+                    let err = wayland_client
                         .set_inhibit_idle(playing)
-                        .context("Failed to set idle inhibitor status")?;
-                    current_status = playing;
+                        .context("Failed to set idle inhibitor status");
+                    if let Err(e) = err {
+                        error!("Error setting idle inhibitor status: {e:?}");
+                    } else {
+                        current_status = playing;
+                    }
                 }
             }
             Err(e) => error!("Error getting MPRIS status: {e:?}"),
