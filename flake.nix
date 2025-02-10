@@ -1,80 +1,50 @@
 {
-  description = "Flake for wayland-mpris-idle-inhibit";
+  description = "Nushell Plugin DBUS";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flakelight.url = "github:nix-community/flakelight";
+    flakelight.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = {
+  outputs = inputs @ {
     self,
     nixpkgs,
-  }: let
-    forAllSystems = nixpkgs.lib.genAttrs [
-      "aarch64-linux"
-      "aarch64-darwin"
-      "x86_64-darwin"
-      "x86_64-linux"
-    ];
-    pkgsFor = system: import nixpkgs {inherit system;};
-    common = pkgs:
-      with pkgs; [
-        gcc
-        pkg-config
-        dbus
-      ];
-  in {
-    packages = forAllSystems (system: let
-      pkgs = pkgsFor system;
-    in {
-      default = pkgs.rustPlatform.buildRustPackage rec {
-        pname = "wayland-mpris-idle-inhibit";
-        version = "0.1.0";
+    flakelight,
+  }:
+    flakelight ./. {
+      inherit inputs;
+      pname = "wayland-mpris-idle-inhibit";
+      package = {
+        rustPlatform,
+        dbus,
+        nushell,
+        pkg-config,
+        fetchFromGitHub,
+        lib,
+      }:
+        rustPlatform.buildRustPackage {
+          pname = "wayland-mpris-idle-inhibit";
+          version = "0.1.0";
 
-        src = with pkgs.lib.fileset;
-          toSource {
-            root = ./.;
-            fileset = unions [
-              ./src
-              ./Cargo.toml
-              ./Cargo.lock
-            ];
+          src = ./.;
+
+          useFetchCargoVendor = true;
+          cargoLock.lockFile = ./Cargo.lock;
+
+          nativeBuildInputs = [
+            pkg-config
+          ];
+
+          buildInputs = [
+            dbus
+          ];
+
+          meta = with lib; {
+            description = "A program that enables the wl-roots idle inhibitor when MPRIS reports any player";
+            license = licenses.mit;
+            homepage = "https://github.com/Bwc9876/wayland-mpris-idle-inhibit";
           };
-
-        useFetchCargoVendor = true;
-
-        cargoLock = {
-          lockFile = ./Cargo.lock;
         };
-
-        nativeBuildInputs = common pkgs;
-        buildInputs = common pkgs;
-
-        doCheck = false;
-
-        meta = with pkgs.lib; {
-          description = "A small utility to inhibit idle on wayland for mpris clients";
-          homepage = "https://github.com/Bwc9876/wayland-mpris-idle-inhibit";
-          license = licenses.gpl3;
-          maintainers = with maintainers; [bwc9876];
-        };
-      };
-    });
-    devShells = forAllSystems (system: let
-      pkgs = pkgsFor system;
-    in {
-      default = pkgs.mkShell {
-        name = "mpris-idle-inhibit-dev-shell";
-        buildInputs = with pkgs;
-          [
-            rustc
-            cargo
-            clippy
-            rustfmt
-          ]
-          ++ common pkgs;
-        shellHook = '''';
-      };
-    });
-    formatter = forAllSystems (system: (pkgsFor system).alejandra);
-  };
+    };
 }
