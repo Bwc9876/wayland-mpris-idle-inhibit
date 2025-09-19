@@ -7,22 +7,24 @@
     flakelight.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs @ {
-    self,
-    nixpkgs,
-    flakelight,
-  }:
+  outputs =
+    inputs @ { self
+    , nixpkgs
+    , flakelight
+    ,
+    }:
     flakelight ./. {
       inherit inputs;
       pname = "wayland-mpris-idle-inhibit";
-      package = {
-        rustPlatform,
-        dbus,
-        nushell,
-        pkg-config,
-        fetchFromGitHub,
-        lib,
-      }:
+      package =
+        { rustPlatform
+        , dbus
+        , nushell
+        , pkg-config
+        , fetchFromGitHub
+        , lib
+        ,
+        }:
         rustPlatform.buildRustPackage {
           pname = "wayland-mpris-idle-inhibit";
           version = "0.1.0";
