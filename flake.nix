@@ -1,16 +1,18 @@
 {
-  description = "Nushell Plugin DBUS";
+  description = "Wayland Mpris Idle Inhibit";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flakelight.url = "github:nix-community/flakelight";
     flakelight.inputs.nixpkgs.follows = "nixpkgs";
+    crane.url = "github:ipetkov/crane";
   };
 
   outputs =
-    inputs @ { self
+    inputs@{ self
     , nixpkgs
     , flakelight
+    , crane
     ,
     }:
     flakelight ./. {
@@ -23,29 +25,30 @@
         , pkg-config
         , fetchFromGitHub
         , lib
+        , pkgs
         ,
         }:
-        rustPlatform.buildRustPackage {
-          pname = "wayland-mpris-idle-inhibit";
-          version = "0.1.0";
-
+        let
+          craneLib = crane.mkLib pkgs;
           src = ./.;
-
-          cargoLock.lockFile = ./Cargo.lock;
-
-          nativeBuildInputs = [
-            pkg-config
-          ];
-
-          buildInputs = [
-            dbus
-          ];
-
-          meta = with lib; {
-            description = "A program that enables the wl-roots idle inhibitor when MPRIS reports any player";
-            license = licenses.mit;
-            homepage = "https://github.com/Bwc9876/wayland-mpris-idle-inhibit";
+          commonArgs = {
+            inherit src;
+            strictDeps = true;
+            nativeBuildInputs = [
+              pkg-config
+            ];
+            buildInputs = [
+              dbus
+            ];
           };
-        };
+          cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+          wayland-mpris-idle-inhibit = craneLib.buildPackage (
+            commonArgs
+            // {
+              inherit cargoArtifacts;
+            }
+          );
+        in
+        wayland-mpris-idle-inhibit;
     };
 }
