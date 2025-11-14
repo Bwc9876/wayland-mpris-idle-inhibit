@@ -46,6 +46,13 @@
             commonArgs
             // {
               inherit cargoArtifacts;
+
+              meta = with lib; {
+                mainProgram = "wayland-mpris-idle-inhibit";
+                description = "A program that enables the wl-roots idle inhibitor when MPRIS reports any player";
+                license = licenses.mit;
+                homepage = "https://github.com/Bwc9876/wayland-mpris-idle-inhibit";
+              };
             }
           );
         in
