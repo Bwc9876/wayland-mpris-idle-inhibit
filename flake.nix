@@ -18,6 +18,10 @@
     flakelight ./. {
       inherit inputs;
       pname = "wayland-mpris-idle-inhibit";
+      devShell = pkgs: (crane.mkLib pkgs).devShell {
+        nativeBuildInputs = [ pkgs.pkg-config ];
+        buildInputs = [ pkgs.dbus pkgs.pkg-config ];
+      };
       package =
         { rustPlatform
         , dbus

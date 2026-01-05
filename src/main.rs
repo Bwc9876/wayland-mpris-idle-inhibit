@@ -1,3 +1,4 @@
+mod dbus;
 mod wayland;
 
 use anyhow::{Context, Result as _Result};
@@ -5,6 +6,7 @@ use clap::Parser;
 use log::{debug, error, info};
 use mpris::{FindingError, PlayerFinder};
 
+use crate::dbus::DbusClient;
 use crate::wayland::WaylandClient;
 
 type Result<T = ()> = _Result<T>;
@@ -104,7 +106,9 @@ fn main() -> Result {
         .into_iter()
         .map(|s| s.to_lowercase())
         .collect::<Vec<_>>();
+
     let mut wayland_client = WaylandClient::new().context("Failed to initialize Wayland client")?;
+    let mut dbus_client = DbusClient::new().context("While setting up DBUS client")?;
 
     info!("Watching for MPRIS Changes...");
 
@@ -116,14 +120,22 @@ fn main() -> Result {
                 debug!("MPRIS status: {playing}");
                 if playing != current_status {
                     info!("MPRIS status changed: {playing}");
+
                     let err = wayland_client
                         .set_inhibit_idle(playing)
                         .context("Failed to set idle inhibitor status");
                     if let Err(e) = err {
-                        error!("Error setting idle inhibitor status: {e:?}");
-                    } else {
-                        current_status = playing;
+                        error!("Error setting Wayland idle inhibitor status: {e:?}");
                     }
+
+                    let err = dbus_client
+                        .toggle(playing)
+                        .context("While switching player status");
+                    if let Err(why) = err {
+                        error!("Error setting DBUS idle inhibitor: {why:?}");
+                    }
+
+                    current_status = playing;
                 }
             }
             Err(e) => error!("Error getting MPRIS status: {e:?}"),

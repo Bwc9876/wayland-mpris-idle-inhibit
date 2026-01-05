@@ -8,13 +8,14 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.100"
-clap = { version = "4.5.51", features = ["derive"] }
+clap = { version = "4.5.54", features = ["derive"] }
 colog = "1.4.0"
 env_logger = "0.11.8"
-log = "0.4.28"
+log = "0.4.29"
 mpris = "2.0.1"
-wayland-client = "0.31.11"
-wayland-protocols = { version = "0.32.9", features = ["client", "unstable"] }
+wayland-client = "0.31.12"
+wayland-protocols = { version = "0.32.10", features = ["client", "unstable"] }
+zbus = { version = "5.12.0" }
 
 [profile.release]
 panic = "abort"
