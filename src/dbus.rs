@@ -9,7 +9,7 @@ use zbus::{blocking::Connection, proxy};
     default_path = "/ScreenSaver"
 )]
 trait ScreenSaver {
-    fn Inhibit(&self, application_name: &str, reason_for_inhibit: &str) -> zbus::Result<u32>;
+    fn  Inhibit(&self, application_name: &str, reason_for_inhibit: &str) -> zbus::Result<u32>;
 
     #[zbus(no_reply)]
     fn UnInhibit(&self, cookie: u32) -> zbus::Result<()>;

@@ -22,6 +22,9 @@
         nativeBuildInputs = [ pkgs.pkg-config ];
         buildInputs = [ pkgs.dbus pkgs.pkg-config ];
       };
+      homeModules = {
+        
+      };
       package =
         { rustPlatform
         , dbus

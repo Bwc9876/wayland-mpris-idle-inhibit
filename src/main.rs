@@ -13,7 +13,7 @@ type Result<T = ()> = _Result<T>;
 
 #[derive(Parser)]
 #[clap(
-    name = "wayland-mpris-idle-inhibit",
+    name = "wayland-mpris-idle-inhibit" ,
     about = "Inhibit idle when MPRIS player is active",
     version,
     author
