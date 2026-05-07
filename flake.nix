@@ -91,11 +91,8 @@
             };
         };
       package =
-        { rustPlatform
-        , dbus
-        , nushell
+        { dbus
         , pkg-config
-        , fetchFromGitHub
         , lib
         , pkgs
         ,
@@ -122,6 +119,7 @@
               meta = with lib; {
                 mainProgram = "wayland-mpris-idle-inhibit";
                 description = "A program that enables the wl-roots idle inhibitor when MPRIS reports any player";
+                maintainers = with maintainers; [ bwc9876 ];
                 license = licenses.mit;
                 homepage = "https://tangled.org/did:plc:x7tlupbnqot7nu6udnffnv4h/wayland-mpris-idle-inhibit";
               };
