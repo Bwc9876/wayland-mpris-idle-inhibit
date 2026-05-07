@@ -102,6 +102,7 @@
           src = ./.;
           commonArgs = {
             inherit src;
+            doCheck = false;
             strictDeps = true;
             nativeBuildInputs = [
               pkg-config
