@@ -4,13 +4,13 @@
 use anyhow::Context;
 use log::{debug, info, warn};
 use wayland_client::{
+    Connection, Dispatch, EventQueue, Proxy, QueueHandle,
     protocol::{
         wl_compositor::WlCompositor,
         wl_display::WlDisplay,
         wl_registry::{self, WlRegistry},
         wl_surface::WlSurface,
     },
-    Connection, Dispatch, EventQueue, Proxy, QueueHandle,
 };
 use wayland_protocols::wp::idle_inhibit::zv1::client::{
     zwp_idle_inhibit_manager_v1::ZwpIdleInhibitManagerV1, zwp_idle_inhibitor_v1::ZwpIdleInhibitorV1,
@@ -126,11 +126,11 @@ impl Dispatch<WlRegistry, ()> for AppData {
                         state.compositor = None;
                         state.surface = None;
                     }
-                } else if let Some((_, idle_manager_name)) = &state.idle_manager {
-                    if name == *idle_manager_name {
-                        warn!(target: "WaylandIdleInhibitor::GlobalRemove", "IdleInhibitManager was removed!");
-                        state.idle_manager = None;
-                    }
+                } else if let Some((_, idle_manager_name)) = &state.idle_manager
+                    && name == *idle_manager_name
+                {
+                    warn!(target: "WaylandIdleInhibitor::GlobalRemove", "IdleInhibitManager was removed!");
+                    state.idle_manager = None;
                 }
             }
             _ => {}

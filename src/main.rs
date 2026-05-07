@@ -1,6 +1,8 @@
 mod dbus;
 mod wayland;
 
+use std::collections::HashSet;
+
 use anyhow::{Context, Result as _Result};
 use clap::Parser;
 use log::{debug, error, info};
@@ -13,7 +15,7 @@ type Result<T = ()> = _Result<T>;
 
 #[derive(Parser)]
 #[clap(
-    name = "wayland-mpris-idle-inhibit" ,
+    name = "wayland-mpris-idle-inhibit",
     about = "Inhibit idle when MPRIS player is active",
     version,
     author
@@ -41,7 +43,7 @@ struct Cli {
 
 const NO_PLAYER_TEXT: &str = "No player is being controlled by playerctld";
 
-fn check_mpris(ignore_list: &[String]) -> Result<bool> {
+fn check_mpris(ignore_list: &HashSet<String>) -> Result<bool> {
     let finder = PlayerFinder::new().context("Couldn't open player finder")?;
     let active = match finder.find_all() {
         Ok(player) => Ok(Some(player)),
@@ -59,12 +61,18 @@ fn check_mpris(ignore_list: &[String]) -> Result<bool> {
     if let Some(players) = active {
         Ok(players.iter().any(|player| {
             let id = player.identity();
+            let player_part = player.bus_name_trimmed().to_lowercase();
+            let root_player = player_part.split_once(".").unwrap_or((player_part.as_str(), "")).0;
+            if ignore_list.contains(root_player) {
+                debug!("Ignoring {root_player}");
+                return false;
+            }
+
             match player.get_playback_status() {
                 Ok(status) => {
-                    let player_name = player.bus_name_player_name_part().to_string();
-                    let is_playing = status == mpris::PlaybackStatus::Playing && !ignore_list.contains(&player_name);
+                    let is_playing = status == mpris::PlaybackStatus::Playing;
                     debug!(
-                        "Player \"{id}\":\nStatus: {status:?}\nBus name (player part): \"{player_name}\"\nConsidered playing: {is_playing}"
+                        "Player \"{id}\":\nStatus: {status:?}\nBus name (player part): \"{root_player}\"\nConsidered playing: {is_playing}"
                     );
                     is_playing
                 }
@@ -105,7 +113,7 @@ fn main() -> Result {
         .ignore
         .into_iter()
         .map(|s| s.to_lowercase())
-        .collect::<Vec<_>>();
+        .collect::<HashSet<_>>();
 
     let mut wayland_client = WaylandClient::new().context("Failed to initialize Wayland client")?;
     let mut dbus_client = DbusClient::new().context("While setting up DBUS client")?;
