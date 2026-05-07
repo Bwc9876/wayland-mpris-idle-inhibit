@@ -58,7 +58,7 @@
                 mainProgram = "wayland-mpris-idle-inhibit";
                 description = "A program that enables the wl-roots idle inhibitor when MPRIS reports any player";
                 license = licenses.mit;
-                homepage = "https://github.com/Bwc9876/wayland-mpris-idle-inhibit";
+                homepage = "https://tangled.org/did:plc:x7tlupbnqot7nu6udnffnv4h/wayland-mpris-idle-inhibit";
               };
             }
           );

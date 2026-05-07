@@ -1,6 +1,6 @@
 [package]
 name = "wayland-mpris-idle-inhibit"
-authors = ["Ben C <bwc9876@gmail.com>"]
+authors = ["Ben C <ben@bwc9876.dev>"]
 version = "0.1.0"
 edition = "2024"
 
@@ -8,14 +8,14 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.102"
-clap = { version = "4.5.60", features = ["derive"] }
+clap = { version = "4.6.1", features = ["derive"] }
 colog = "1.4.0"
-env_logger = "0.11.9"
+env_logger = "0.11.10"
 log = "0.4.29"
-mpris = "2.0.1"
-wayland-client = "0.31.13"
-wayland-protocols = { version = "0.32.11", features = ["client", "unstable"] }
-zbus = { version = "5.14.0" }
+mpris = "2.1.0"
+wayland-client = "0.31.14"
+wayland-protocols = { version = "0.32.12", features = ["client", "unstable"] }
+zbus = { version = "5.15.0" }
 
 [profile.release]
 panic = "abort"
