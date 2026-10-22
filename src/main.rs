@@ -43,7 +43,7 @@ struct Cli {
 
 const NO_PLAYER_TEXT: &str = "No player is being controlled by playerctld";
 
-fn check_mpris(ignore_list: &HashSet<String>) -> Result<bool> {
+async fn check_mpris(ignore_list: &HashSet<String>) -> Result<bool> {
     let finder = PlayerFinder::new().context("Couldn't open player finder")?;
     let active = match finder.find_all() {
         Ok(player) => Ok(Some(player)),
@@ -87,7 +87,8 @@ fn check_mpris(ignore_list: &HashSet<String>) -> Result<bool> {
     }
 }
 
-fn main() -> Result {
+#[tokio::main]
+async fn main() -> Result {
     let cli = Cli::parse();
 
     let log_level = match cli.verbose {
@@ -116,14 +117,16 @@ fn main() -> Result {
         .collect::<HashSet<_>>();
 
     let mut wayland_client = WaylandClient::new().context("Failed to initialize Wayland client")?;
-    let mut dbus_client = DbusClient::new().context("While setting up DBUS client")?;
+    let mut dbus_client = DbusClient::new()
+        .await
+        .context("While setting up DBUS client")?;
 
     info!("Watching for MPRIS Changes...");
 
     let mut current_status = false;
 
     loop {
-        match check_mpris(&ignore) {
+        match check_mpris(&ignore).await {
             Ok(playing) => {
                 debug!("MPRIS status: {playing}");
                 if playing != current_status {
@@ -138,6 +141,7 @@ fn main() -> Result {
 
                     let err = dbus_client
                         .toggle(playing)
+                        .await
                         .context("While switching player status");
                     if let Err(why) = err {
                         error!("Error setting DBUS idle inhibitor: {why:?}");

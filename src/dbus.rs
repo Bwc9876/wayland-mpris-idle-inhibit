@@ -1,7 +1,7 @@
 use crate::Result;
 use anyhow::Context;
 use log::warn;
-use zbus::{blocking::Connection, proxy};
+use zbus::{Connection, proxy};
 
 #[proxy(
     interface = "org.freedesktop.ScreenSaver",
@@ -17,14 +17,17 @@ trait ScreenSaver {
 
 pub struct DbusClient<'a> {
     _conn: Connection,
-    proxy: ScreenSaverProxyBlocking<'a>,
+    proxy: ScreenSaverProxy<'a>,
     cookie: Option<u32>,
 }
 
 impl<'a> DbusClient<'a> {
-    pub fn new() -> Result<Self> {
-        let conn = Connection::session().context("While creating DBUS connection")?;
-        let proxy = ScreenSaverProxyBlocking::new(&conn)
+    pub async fn new() -> Result<Self> {
+        let conn = Connection::session()
+            .await
+            .context("While creating DBUS connection")?;
+        let proxy = ScreenSaverProxy::new(&conn)
+            .await
             .context("While initializing proxy to org.freedesktop.ScreenSaver")?;
 
         Ok(Self {
@@ -36,11 +39,11 @@ impl<'a> DbusClient<'a> {
 }
 
 impl DbusClient<'_> {
-    pub fn toggle(&mut self, playing: bool) -> Result {
+    pub async fn toggle(&mut self, playing: bool) -> Result {
         if playing {
             if let Some(old_cookie) = self.cookie.take() {
                 warn!("Trying to inhibit but still have an old cookie");
-                if let Err(why) = self.proxy.UnInhibit(old_cookie) {
+                if let Err(why) = self.proxy.UnInhibit(old_cookie).await {
                     warn!("Failed to uninhibit with old cookie ({why:?}), ignoring...");
                 }
             }
@@ -50,11 +53,15 @@ impl DbusClient<'_> {
                     "wayland-mpris-idle-inhibit",
                     "An MPRIS player is playing media",
                 )
+                .await
                 .context("While inhibiting")?;
             self.cookie = Some(cookie);
             Ok(())
         } else if let Some(cookie) = self.cookie.take() {
-            self.proxy.UnInhibit(cookie).context("While uninhibiting")
+            self.proxy
+                .UnInhibit(cookie)
+                .await
+                .context("While uninhibiting")
         } else {
             warn!("Tried to uninhibit but don't have an old cookie, ignoring...");
             Ok(())

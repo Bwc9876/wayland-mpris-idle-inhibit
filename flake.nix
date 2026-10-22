@@ -9,11 +9,11 @@
   };
 
   outputs =
-    inputs@{ self
-    , nixpkgs
-    , flakelight
-    , crane
-    ,
+    inputs@{
+      self,
+      nixpkgs,
+      flakelight,
+      crane,
     }:
     flakelight ./. {
       inherit inputs;
@@ -28,10 +28,11 @@
           ];
         };
       homeModule =
-        { config
-        , lib
-        , pkgs
-        , ...
+        {
+          config,
+          lib,
+          pkgs,
+          ...
         }:
         {
           options.services.wayland-mpris-idle-inhibit = {
@@ -91,11 +92,11 @@
             };
         };
       package =
-        { dbus
-        , pkg-config
-        , lib
-        , pkgs
-        ,
+        {
+          dbus,
+          pkg-config,
+          lib,
+          pkgs,
         }:
         let
           craneLib = crane.mkLib pkgs;
